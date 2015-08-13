@@ -1,0 +1,15 @@
+{
+  "name": "Editus-demo",
+  "version": "0.0.1",
+  "description": "Project for Editus app testing",
+  "authors": [
+    "Julia Gladysh <jgladysh@gmail.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "latest",
+    "bootstrap": "latest",
+    "undo": "https://github.com/jzaefferer/undo.git",
+    "editus": "https://github.com/jgladysh/Editus.git"
+  }
+}

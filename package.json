@@ -1,0 +1,20 @@
+{
+  "name": "Editus-demo",
+  "dependencies": {
+    "debug": "~2.1.1",
+    "babelify": "latest",
+    "browserify-shim": "latest",
+    "editus": "https://github.com/jgladysh/Editus.git"
+  },
+  "browserify": {
+    "transform": [
+      "babelify",
+      "browserify-shim"
+    ]
+  },
+  "browserify-shim": {
+    "editus": {
+      "exports": "editus"
+    }
+  }
+}
