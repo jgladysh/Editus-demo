@@ -1,10 +1,13 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
+"use strict";
 
 var Editus = require('editus');
 
+var keyWordsArray = ["create", "experiment", "assign", "to", "all", "users", "where", "for", "salt", "new"];
+
 window.onload = function () {
-  Editus.createEditor('content');
+    Editus.createEditor('content');
+    Editus.setHighlightingWords(keyWordsArray);
 };
 
 },{"editus":2}],2:[function(require,module,exports){
@@ -50,13 +53,24 @@ window.onload = function () {
 
             var initStack = _dereq_("./undo_redo").initStack;
 
+            var setKeyWordsArray = _dereq_("./highlighting").setKeyWordsArray;
+
+            // Create editor from contentEditable div
             var createEditor = function createEditor(id) {
                 initStack(id);
                 makeEditable(id);
             };
 
+            // Add words to be highlighted
+            var setHighlightingWords = function setHighlightingWords(arr) {
+                if (arr && arr.length >= 0) {
+                    setKeyWordsArray(arr);
+                }
+            };
+
             exports.createEditor = createEditor;
-        }, { "./main": 4, "./undo_redo": 6 }], 2: [function (_dereq_, module, exports) {
+            exports.setHighlightingWords = setHighlightingWords;
+        }, { "./highlighting": 3, "./main": 4, "./undo_redo": 6 }], 2: [function (_dereq_, module, exports) {
             (function (global) {
                 "use strict";
 
@@ -158,19 +172,21 @@ window.onload = function () {
                 typeof window !== "undefined" ? window['jquery'] : typeof global !== "undefined" ? global['jquery'] : null;
 
                 //Array of words, that should be highlighted
-                var keyWordsArray = ["create", "experiment", "assign", "to", "all", "users", "where", "for", "salt", "new"];
+                var keyWordsArray;
 
                 //Recursively check every element in contentEditable node
                 function checkEveryTag(node) {
-                    if (node.childNodes.length > 0) {
-                        for (var i = 0; i < node.childNodes.length; i++) {
-                            if (node.childNodes[i].data && node.childNodes[i].data !== "" || node.childNodes[i].nodeName === "DIV") {
-                                checkEveryTag(node.childNodes[i]);
+                    if (keyWordsArray) {
+                        if (node.childNodes.length > 0) {
+                            for (var i = 0; i < node.childNodes.length; i++) {
+                                if (node.childNodes[i].data && node.childNodes[i].data !== "" || node.childNodes[i].nodeName === "DIV") {
+                                    checkEveryTag(node.childNodes[i]);
+                                }
                             }
+                        } else {
+                            var ranges = makeRangesFromMatches(keyWordsArray, node);
+                            wrapNodes(ranges);
                         }
-                    } else {
-                        var ranges = makeRangesFromMatches(keyWordsArray, node);
-                        wrapNodes(ranges);
                     }
                 }
 
@@ -218,38 +234,45 @@ window.onload = function () {
 
                 //Check every highlighted node for changes
                 function checkHighlighted(e, id) {
-                    var sel = window.getSelection(),
-                        anchorNode = sel.anchorNode,
-                        nextNode = anchorNode.nextElementSibling,
-                        content = document.getElementById(id),
-                        nodeToCheck = sel.baseNode.parentElement;
-                    //Handle caret positioning just before highlighted node, that prevent sticking of regular text nodes with highlighted
-                    if (anchorNode.length === sel.anchorOffset && (nextNode && nextNode.nodeName === "SPAN")) {
-                        $(nextNode).contents().unwrap();
-                        content.normalize();
-                        setProcessing(true);
-                    }
-                    if (nodeToCheck.className === "highlighted" || sel.baseNode.className === "highlighted") {
-                        var range = sel.getRangeAt(0),
-                            char = getCharacterOffsetWithin(range, content),
-                            highlighted = $(".highlighted");
-                        for (var i = 0; i < highlighted.length; i++) {
-                            var text = $(highlighted[i]).text();
-                            if (!new RegExp(keyWordsArray.map(function (w) {
-                                return "^" + w + "$";
-                            }).join("|"), "gi").test(text)) {
-                                $(highlighted[i]).contents().unwrap();
-                                content.normalize();
-                                if (e.keyCode !== 13) {
-                                    setCaretCharIndex(content, char);
+                    if (keyWordsArray) {
+                        var sel = window.getSelection(),
+                            anchorNode = sel.anchorNode,
+                            nextNode = anchorNode.nextElementSibling,
+                            content = document.getElementById(id),
+                            nodeToCheck = sel.baseNode.parentElement;
+                        //Handle caret positioning just before highlighted node, that prevent sticking of regular text nodes with highlighted
+                        if (anchorNode.length === sel.anchorOffset && (nextNode && nextNode.nodeName === "SPAN")) {
+                            $(nextNode).contents().unwrap();
+                            content.normalize();
+                            setProcessing(true);
+                        }
+                        if (nodeToCheck.className === "highlighted" || sel.baseNode.className === "highlighted") {
+                            var range = sel.getRangeAt(0),
+                                char = getCharacterOffsetWithin(range, content),
+                                highlighted = $(".highlighted");
+                            for (var i = 0; i < highlighted.length; i++) {
+                                var text = $(highlighted[i]).text();
+                                if (!new RegExp(keyWordsArray.map(function (w) {
+                                    return "^" + w + "$";
+                                }).join("|"), "gi").test(text)) {
+                                    $(highlighted[i]).contents().unwrap();
+                                    content.normalize();
+                                    if (e.keyCode !== 13) {
+                                        setCaretCharIndex(content, char);
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
+                function setKeyWordsArray(val) {
+                    keyWordsArray = val;
+                }
+
                 exports.checkHighlighted = checkHighlighted;
                 exports.checkEveryTag = checkEveryTag;
+                exports.setKeyWordsArray = setKeyWordsArray;
             }).call(this, typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
         }, { "./caret": 2, "./main": 4 }], 4: [function (_dereq_, module, exports) {
             (function (global) {
