@@ -11,21 +11,30 @@
     <link rel="stylesheet" href="./bower_components/editus/dist/editus.min.css">
 
     <style>
-        #content {
+        .content {
             border: 1px solid black;
             width: 800px;
             min-height: 200px;
             position: absolute;
-            top: 50%;
             left: 50%;
-            margin: -100px 0 0 -400px;
+            margin: 0 0 0 -400px;
             font-size: 24px;
             font-family: monospace;
+        }
+
+        #content1 {
+            top: 10%;
+        }
+
+        #content2 {
+            top: 50%;
         }
     </style>
 </head>
 <body>
-<div contenteditable="true" id='content'>
+<div contenteditable="true" class='content' id='content1'>
+</div>
+<div contenteditable="true" class='content' id='content2'>
 </div>
 </body>
 
