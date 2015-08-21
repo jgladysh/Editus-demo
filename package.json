@@ -1,7 +1,14 @@
 {
   "name": "Editus-demo",
   "dependencies": {
+    "body-parser": "~1.13.2",
+    "cookie-parser": "~1.3.5",
+    "express": "~4.13.1",
+    "jade": "~1.11.0",
+    "morgan": "~1.6.1",
     "debug": "~2.1.1",
+    "serve-favicon": "~2.3.0",
+    "cors": "latest",
     "babelify": "latest",
     "browserify-shim": "latest",
     "editus": "https://github.com/jgladysh/Editus.git"
